@@ -114,6 +114,25 @@ export async function fetchFlexUnits(traitComposition) {
     }
 }
 
+export async function fetchUnitLevel(trait) {
+  try {
+    const response = await fetch(`https://localhost:7057/api/RiotApi/unit-stats?trait=${encodeURIComponent(trait)}`);
+    if (!response.ok) {
+      throw new Error(`API call failed: ${response.statusText}`);
+    }
+
+    const unitStatsData = await response.json();
+
+    return unitStatsData.reduce((acc, item) => {
+      acc[item.unit] = parseFloat(item.avgLevel.toFixed(4));
+      return acc;
+    }, {});
+  } catch (error) {
+    console.error("Error fetching unit stats:", error);
+    return {};
+  }
+}
+
 export async function toggleNestedRow(index, traits, expandedWidgets, nestedData) {
   const traitComposition = traits[index].teamComposition;
 

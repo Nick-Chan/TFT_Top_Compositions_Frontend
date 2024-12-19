@@ -1,148 +1,176 @@
 <template>
-    <div>
-      <h1>Average Placements by Traits</h1>
-      <table class="styled-table">
-        <thead>
+  <div>
+    <h1>Average Placements by Traits</h1>
+    <table class="styled-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Trait Composition</th>
+          <th class="stat-header">Avg Place</th>
+          <th class="stat-header">Win Rate</th>
+          <th class="stat-header">Top 4</th>
+          <th class="stat-header">Play Rate</th>
+          <th>Core Units</th>
+          <th>Flex Units</th>
+        </tr>
+      </thead>
+      <tbody>
+        <template v-for="(trait, index) in traits" :key="trait.teamComposition">
+          <!-- Main Trait Row -->
           <tr>
-            <th></th>
-            <th>Trait Composition</th>
-            <th class="stat-header">Avg Place</th>
-            <th class="stat-header">Win Rate</th>
-            <th class="stat-header">Top 4</th>
-            <th class="stat-header">Play Rate</th>
-            <th>Core Units</th>
-            <th>Flex Units</th>
+            <td>
+              <button @click="toggleWidget(index)">
+                {{ expandedWidgets.includes(index) ? '-' : '+' }}
+              </button>
+            </td>
+            <td class="trait-cell">
+              <div class="trait-content">
+                  <img
+                      class="trait-image"
+                      :src="getTraitImage(trait.teamComposition)"
+                      :alt="trait.teamComposition"
+                  />
+                  <span class="trait-text">{{ trait.teamComposition }}</span>
+              </div>
+            </td>
+            <td
+              class="highlight-column"
+              :style="{ backgroundColor: getAvgPlacementBackgroundColor(trait.avgPlacement, minAvgPlacement, maxAvgPlacement) }"
+            >
+              {{ trait.avgPlacement.toFixed(2) }}
+            </td>
+            <td
+              class="highlight-column"
+              :style="{ backgroundColor: getWinRateBackgroundColor(trait.winRate, minWinRate, maxWinRate) }"
+            >
+              {{ (trait.winRate).toFixed(2) }}
+            </td>
+            <td
+              class="highlight-column"
+              :style="{ backgroundColor: getTop4BackgroundColor(trait.top4Rate, minTop4Rate, maxTop4Rate) }"
+            >
+              {{ (trait.top4Rate).toFixed(2) }}
+            </td>
+            <td
+              class="highlight-column"
+              :style="{ backgroundColor: getPlayRateBackgroundColor(trait.playRate, minPlayRate, maxPlayRate) }"
+            >
+              {{ (trait.playRate).toFixed(2) }}
+            </td>
+            <td>
+              <div class="unit-images">
+                <div class="unit-wrapper" v-for="unit in trait.coreUnits" :key="unit.name">
+                  <span v-if="unit.avgLevel > 2.50" class="unit-stars">★★★</span>
+                  <img
+                    :src="unitImageMap[unit.name] || '/images/units/default.avif'"
+                    :alt="unit.name"
+                    :style="{ borderBottom: '4px solid ' + getBorderColor(unit.name) }"
+                    class="unit-icon"
+                  />
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="unit-images">
+                <img
+                  v-for="unit in trait.flexUnits.split(', ')"
+                  :key="unit"
+                  :src="unitImageMap[unit] || '/images/units/default.avif'"
+                  :alt="unit"
+                  :style="{ borderBottom: '4px solid ' + getBorderColor(unit) }"
+                  class="unit-icon"
+                />
+              </div>
+            </td>
           </tr>
-        </thead>
-        <tbody>
-          <template v-for="(trait, index) in traits" :key="trait.teamComposition">
-            <!-- Main Trait Row -->
-            <tr>
-              <td>
-                <button @click="toggleWidget(index)">
-                  {{ expandedWidgets.includes(index) ? '-' : '+' }}
-                </button>
-              </td>
-              <td>{{ trait.teamComposition }}</td>
-              <td
-                class="highlight-column"
-                :style="{ backgroundColor: getAvgPlacementBackgroundColor(trait.avgPlacement, minAvgPlacement, maxAvgPlacement) }"
-              >
-                {{ trait.avgPlacement.toFixed(2) }}
-              </td>
-              <td
-                class="highlight-column"
-                :style="{ backgroundColor: getWinRateBackgroundColor(trait.winRate, minWinRate, maxWinRate) }"
-              >
-                {{ (trait.winRate).toFixed(2) }}
-              </td>
-              <td
-                class="highlight-column"
-                :style="{ backgroundColor: getTop4BackgroundColor(trait.top4Rate, minTop4Rate, maxTop4Rate) }"
-              >
-                {{ (trait.top4Rate).toFixed(2) }}
-              </td>
-              <td
-                class="highlight-column"
-                :style="{ backgroundColor: getPlayRateBackgroundColor(trait.playRate, minPlayRate, maxPlayRate) }"
-              >
-                {{ (trait.playRate).toFixed(2) }}
-              </td>
-              <td>
-                <div class="unit-images">
-                  <img
-                    v-for="unit in trait.coreUnits.split(', ')"
-                    :key="unit"
-                    :src="unitImageMap[unit] || '/images/units/default.avif'"
-                    :alt="unit"
-                    :style="{ border: '3px solid ' + getBorderColor(unit) }"
-                    class="unit-icon"
-                  />
+          <!-- Expanded Widget Row -->
+          <tr v-if="expandedWidgets.includes(index)" class="widget-row">
+            <td colspan="8" class="widget-container">
+              <div class="expanded-widget-two-columns">
+                <!-- Left Column -->
+                <div class="widget-section">
+                  <h3 class="centered-title">Common Compositions</h3>
+                  <table class="nested-table">
+                    <thead>
+                      <tr>
+                        <th>Top Variations</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        v-for="unit in nestedData[index]?.compositions || []"
+                        :key="unit.unitComposition"
+                      >
+                        <td>
+                          <div class="unit-images">
+                            <img
+                              v-for="unit in unit.unitComposition.split(', ')"
+                              :key="unit"
+                              :src="unitImageMap[unit] || '/images/units/default.avif'"
+                              :alt="unit"
+                              :style="{ borderBottom: '4px solid ' + getBorderColor(unit) }"
+                              class="unit-icon"
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
-              </td>
-              <td>
-                <div class="unit-images">
-                  <img
-                    v-for="unit in trait.flexUnits.split(', ')"
-                    :key="unit"
-                    :src="unitImageMap[unit] || '/images/units/default.avif'"
-                    :alt="unit"
-                    :style="{ border: '3px solid ' + getBorderColor(unit) }"
-                    class="unit-icon"
-                  />
+                <!-- Right Column -->
+                <div class="widget-section">
+                  <h3 class="centered-title">Best Items</h3>
+                  <table class="nested-table">
+                    <thead>
+                      <tr>
+                        <th class="stat-header-items">Unit</th>
+                        <th title = "Average Items Held" class="stat-header-items">Items</th>
+                        <th>Best Items</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="unit in nestedData[index]?.coreUnits || []" :key="unit.unit">
+                        <td>
+                          <div class="unit-images">
+                            <img
+                              v-for="unit in unit.unit.split(', ')"
+                              :key="unit"
+                              :src="unitImageMap[unit] || '/images/units/default.avif'"
+                              :alt="unit"
+                              :style="{ borderBottom: '4px solid ' + getBorderColor(unit) }"
+                              class="unit-icon"
+                            />
+                          </div>
+                        </td>
+                        <td
+                          class="highlight-column"
+                          :style="{ backgroundColor: getAvgItemsBackgroundColor(unit.avgItems) }"
+                        >
+                          {{ unit.avgItems }}
+                        </td>
+                        <td>
+                          <div class="unit-images">
+                            <div
+                              v-for="item in unit.bestItems"
+                              :key="item.itemName"
+                              class="item-cell"
+                              :style="{ backgroundColor: getItemPlacementBackgroundColor(item.avgPlacement) }"
+                            >
+                              <img
+                                :src="itemImageMap[item.itemName] || '/images/items/default.avif'"
+                                :alt="item.itemName"
+                                class="unit-icon"
+                              />
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
-              </td>
-            </tr>
-            <!-- Expanded Widget Row -->
-            <tr v-if="expandedWidgets.includes(index)" class="widget-row">
-              <td colspan="8" class="widget-container">
-                <!-- Top Variations-->
-                <table class="nested-table">
-                  <thead>
-                    <tr>
-                      <th>Play Rate</th>
-                      <th>Top Variations</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      v-for="unit in nestedData[index]?.compositions || []"
-                      :key="unit.unitComposition"
-                    >
-                      <td>{{ (unit.playRate).toFixed(2) }}</td>
-                      <td>
-                        <div class="unit-images">
-                          <img
-                            v-for="unit in unit.unitComposition.split(', ')"
-                            :key="unit"
-                            :src="unitImageMap[unit] || '/images/units/default.avif'"
-                            :alt="unit"
-                            :style="{ border: '3px solid ' + getBorderColor(unit) }"
-                            class="unit-icon"
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-                <!-- Top Items-->
-                <table class="nested-table">
-                  <thead>
-                    <tr>
-                      <th>Unit</th>
-                      <th>Best Items</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="unit in nestedData[index]?.coreUnits || []" :key="unit.unit">
-                      <td>
-                        <div class="unit-images">
-                          <img
-                            v-for="unit in unit.unit.split(', ')"
-                            :key="unit"
-                            :src="unitImageMap[unit] || '/images/units/default.avif'"
-                            :alt="unit"
-                            :style="{ border: '3px solid ' + getBorderColor(unit) }"
-                            class="unit-icon"
-                          />
-                        </div>
-                      </td>
-                      <td>
-                        <div class="unit-images">
-                          <img
-                            v-for="item in unit.bestItems"
-                            :key="item"
-                            :src="itemImageMap[item] || '/images/items/default.avif'"
-                            :alt="item"
-                            class="unit-icon"
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-                <!-- Chart Grid Container -->
+                <!-- Chart Grid -->
                 <div class="chart-grid">
+                  <h3 class="centered-title chart-title">Performance History</h3>
                   <div class="chart-box">
                     <canvas :id="'avgPlacement-chart-' + index"></canvas>
                   </div>
@@ -156,16 +184,18 @@
                     <canvas :id="'playRate-chart-' + index"></canvas>
                   </div>
                 </div>
-              </td>
-            </tr>
-          </template>
-        </tbody>
-      </table>
-    </div>
-  </template>  
+              </div>
+            </td>
+          </tr>
+        </template>
+      </tbody>
+    </table>
+  </div>
+</template>
+
   
   <script>
-  import { fetchTraits, fetchCommonUnits, fetchFlexUnits, toggleNestedRow } from "../api";
+  import { fetchTraits, fetchCommonUnits, fetchFlexUnits, fetchUnitLevel, toggleNestedRow } from "../api";
   import { Chart } from "chart.js/auto";
   import unitImageMap from '../utils/unitImageMap';
   import unitLevelMap from '../utils/unitLevelMap';
@@ -210,13 +240,23 @@
       this.maxTop4Rate = Math.max(...top4Rates);
   
       this.traits = await Promise.all(
-        data.map(async (trait) => ({
-          ...trait,
-          winRate: trait.occurrences > 0 ? trait.wins / trait.occurrences : 0,
-          top4Rate: trait.occurrences > 0 ? trait.top4 / trait.occurrences : 0,
-          coreUnits: await fetchCommonUnits(trait.teamComposition),
-          flexUnits: await fetchFlexUnits(trait.teamComposition),
-        }))
+        data.map(async (trait) => {
+          const avgLevels = await fetchUnitLevel(trait.teamComposition);
+          const coreUnits = (await fetchCommonUnits(trait.teamComposition))
+            .split(', ')
+            .map((unit) => ({
+              name: unit,
+              avgLevel: avgLevels[unit] || 0, // Default avgLevel to 0 if not found
+            }));
+
+          return {
+            ...trait,
+            winRate: trait.occurrences > 0 ? trait.wins / trait.occurrences : 0,
+            top4Rate: trait.occurrences > 0 ? trait.top4 / trait.occurrences : 0,
+            coreUnits,
+            flexUnits: await fetchFlexUnits(trait.teamComposition),
+          };
+        })
       );
     },
     methods: {
@@ -225,29 +265,60 @@
           // Collapse widget and destroy chart
           this.expandedWidgets = this.expandedWidgets.filter((i) => i !== index);
           if (this.charts[index]) {
-          this.charts[index].destroy();
-          delete this.charts[index];
+            this.charts[index].destroy();
+            delete this.charts[index];
           }
           delete this.nestedData[index];
         } else {
-          // Fetch nested data for both table and charts
+          // Expand widget and fetch nested data
           const result = await toggleNestedRow(index, this.traits, this.expandedWidgets, this.nestedData);
 
-          // Fetch best items for all core units asynchronously
-          const coreUnits = this.traits[index].coreUnits.split(", ");
+          // Use the updated coreUnits structure
+          const coreUnits = this.traits[index].coreUnits;
+
           const coreUnitsWithItems = await Promise.all(
-            coreUnits.map(async (unit) => ({
-              unit,
-              bestItems: await this.fetchBestItems(unit), // Fetch best items for each unit
-            }))
+            coreUnits.map(async (unitObj) => {
+              const bestItems = await this.fetchBestItems(unitObj.name);
+              return {
+                unit: unitObj.name,
+                bestItems: bestItems.map((item) => ({
+                  itemName: item.itemName,
+                  avgPlacement: item.avgPlacement,
+                })),
+              };
+            })
           );
 
+          // Fetch unit stats for the trait
+          const unitStats = await this.fetchUnitStats(this.traits[index].teamComposition);
+
+          // Combine stats into core units
+          const combinedUnits = coreUnitsWithItems
+            .map((unitData) => {
+              const unitStat = unitStats.find((stat) => stat.unit === unitData.unit) || {
+                avgItems: "N/A",
+                avgLevel: 0,
+                placement: "N/A",
+              };
+              return {
+                ...unitData,
+                avgItems: unitStat.avgItems,
+                placement: unitStat.avgPlacement,
+              };
+            })
+            .sort((a, b) => {
+              if (b.avgItems === "N/A") return -1;
+              if (a.avgItems === "N/A") return 1;
+              return b.avgItems - a.avgItems;
+            });
+
+          // Update expanded widgets and nested data
           this.expandedWidgets = result.expandedWidgets;
           this.nestedData = {
             ...this.nestedData,
             [index]: {
               ...result.nestedData[index],
-              coreUnits: coreUnitsWithItems,
+              coreUnits: combinedUnits,
             },
           };
 
@@ -276,13 +347,35 @@
 
           // If unit data exists, format and return it; otherwise, return a fallback message
           if (unitData) {
-              return unitData.items.map(item => `${item.itemName}`); // (${item.avgPlacement.toFixed(2)})
+            return unitData.items.slice(0, 8).map(item => ({
+                itemName: item.itemName,
+                avgPlacement: item.avgPlacement,
+            }));
           } else {
-              return ["No recommended items"];
+              return [];
           }
         } catch (error) {
             console.error("Error fetching best items:", error);
-            return ["Error fetching items"];
+            return [];
+        }
+      },
+      async fetchUnitStats(trait) {
+        try {
+          const response = await fetch(`https://localhost:7057/api/RiotApi/unit-stats?trait=${encodeURIComponent(trait)}`);
+          if (!response.ok) {
+              throw new Error(`API call failed: ${response.statusText}`);
+          }
+
+          const unitStatsData = await response.json();
+
+          return unitStatsData.map(item => ({
+            unit: item.unit,
+            avgItems: item.avgItems.toFixed(2),
+            placement: item.placement
+        }));
+        } catch (error) {
+            console.error("Error fetching unit stats:", error);
+            return ["Error fetching unit stats"];
         }
       },
       renderChart(index, chartData, chartType) {
@@ -425,6 +518,32 @@
             return "grey";
         }
       },
+      getAvgItemsBackgroundColor(avgItems) {
+          const minItems = 0;
+          const maxItems = 3;
+          
+          const normalized = (avgItems - minItems) / (maxItems - minItems);
+          const green = normalized > 0.5 ? 160 : Math.round(160 * (normalized * 2)); 
+          const red = normalized < 0.5 ? 160 : Math.round(160 * (1 - (normalized - 0.5) * 2)); 
+          const blue = 0;
+          return `rgb(${red}, ${green}, ${blue})`;
+      },
+      getItemPlacementBackgroundColor(avgPlacement) {
+          const minPlacement = 1;
+          const maxPlacement = 8;
+          
+          const normalized = (avgPlacement - minPlacement) / (maxPlacement - minPlacement);
+          const green = normalized < 0.5 ? 160 : Math.round(160 * (1 - (normalized - 0.5) * 2)); 
+          const red = normalized > 0.5 ? 160 : Math.round(160 * (normalized * 2)); 
+          const blue = 0;
+          return `rgb(${red}, ${green}, ${blue})`;
+      },
+      getTraitImage(teamComposition) {
+        const formattedName = teamComposition
+            .toLowerCase()
+            .replace(/[\s\W_]+/g, "");
+        return `/images/traits/${formattedName}.svg`;
+      },
     },
   };
   </script> 
@@ -469,10 +588,18 @@
     width: 5%;
     }
 
+    .nested-table .stat-header-items {
+    text-align: center !important;
+    vertical-align: middle;
+    white-space: nowrap;
+    }
+
     .highlight-column {
     font-weight: bold;
     color: white;
-    text-align: center;
+    text-align: center !important;
+    vertical-align: middle;
+    white-space: nowrap;
     }
 
     .widget-container {
@@ -487,6 +614,18 @@
     width: 100%;
     border-collapse: collapse;
     }
+
+    .expanded-widget-two-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    }
+
+    .widget-section {
+    border: none;
+    padding: 10px;
+    background-color: #f9f9f9;
+    }
     
     .nested-table th,
     .nested-table td {
@@ -500,11 +639,29 @@
     font-weight: bold;
     }
 
+    .stat-header-items {
+    white-space:nowrap;
+    }
+
+    .centered-title {
+    text-align: center;
+    margin-bottom: 10px;
+    font-weight: bold;
+    }
+
     .chart-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr 1fr;
     gap: 20px;
+    grid-column: span 2; 
     padding: 20px;
+    }
+
+    .chart-title {
+    grid-column: 1 / -1;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: bold;
     }
 
     .chart-box {
@@ -531,6 +688,22 @@
     height: 200px;
     }
 
+    .unit-wrapper {
+    position: relative;
+    display: inline-block;
+    }
+
+    .unit-stars {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    color: gold;
+    text-shadow: 1px 1px 2px #000;
+    font-family: Arial, sans-serif;
+    }
+
     .unit-images {
     display: flex;
     flex-wrap: wrap;
@@ -543,5 +716,33 @@
     object-fit: cover;
     border-radius: 4px;
     }
+
+    .trait-cell {
+    vertical-align: middle;
+    padding: 10px;
+    }
+
+    .trait-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    }
+
+    .trait-image {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgb(194, 166, 10);
+    border-radius: 4px;
+    background-color: rgb(194, 166, 10);
+    object-fit: contain;
+    padding: 4px;
+    }
+
+    .trait-text {
+    font-size: 1rem;
+    font-weight: bold;
+    color: rgb(0, 0, 0);
+    }
+
   </style>
   
