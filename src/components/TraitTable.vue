@@ -1,6 +1,17 @@
 <template>
   <div>
-    <h1>Average Placements by Traits</h1>
+    <h1>TFT Masters+ Compositions Meta</h1>
+    <div class="region-filters">
+      <button
+        class="region-btn"
+        v-for="region in regions"
+        :key="region"
+        @click="filterByRegion(region)"
+        :style="{ borderBottom: selectedRegion === region ? '4px solid yellow' : 'none' }"
+      >
+        {{ region }}
+      </button>
+    </div>
     <table class="styled-table">
       <thead>
         <tr>
@@ -66,6 +77,7 @@
                     :alt="unit.name"
                     :style="{ borderBottom: '4px solid ' + getBorderColor(unit.name) }"
                     class="unit-icon"
+                    :data-tippy-content="getTooltipContent(unit.name)"
                   />
                 </div>
               </div>
@@ -79,6 +91,7 @@
                   :alt="unit"
                   :style="{ borderBottom: '4px solid ' + getBorderColor(unit) }"
                   class="unit-icon"
+                  :data-tippy-content="getTooltipContent(unit)"
                 />
               </div>
             </td>
@@ -110,6 +123,7 @@
                               :alt="unit"
                               :style="{ borderBottom: '4px solid ' + getBorderColor(unit) }"
                               class="unit-icon"
+                              :data-tippy-content="getTooltipContent(unit)"
                             />
                           </div>
                         </td>
@@ -139,6 +153,7 @@
                               :alt="unit"
                               :style="{ borderBottom: '4px solid ' + getBorderColor(unit) }"
                               class="unit-icon"
+                              :data-tippy-content="getTooltipContent(unit)"
                             />
                           </div>
                         </td>
@@ -160,6 +175,7 @@
                                 :src="itemImageMap[item.itemName] || '/images/items/default.avif'"
                                 :alt="item.itemName"
                                 class="unit-icon"
+                                :data-tippy-content="getTooltipContent(item.itemName)"
                               />
                             </div>
                           </div>
@@ -194,12 +210,14 @@
 </template>
 
   
-  <script>
+<script>
   import { fetchTraits, fetchCommonUnits, fetchFlexUnits, fetchUnitLevel, toggleNestedRow } from "../api";
   import { Chart } from "chart.js/auto";
   import unitImageMap from '../utils/unitImageMap';
   import unitLevelMap from '../utils/unitLevelMap';
   import itemImageMap from '../utils/itemImageMap';
+  import tippy from 'tippy.js';
+  import 'tippy.js/dist/tippy.css';
   
   export default {
     data() {
@@ -219,6 +237,8 @@
         unitImageMap,
         unitLevelMap,
         itemImageMap,
+        regions: ["ALL", "AMERICAS", "EUROPE", "ASIA", "SEA"],
+        selectedRegion: "ALL",
       };
     },
     async created() {
@@ -259,7 +279,27 @@
         })
       );
     },
+    updated() {
+      this.initTippy();
+    },
+    mounted() {
+      this.initTippy();
+    },
     methods: {
+      filterByRegion(region) {
+        this.selectedRegion = region;
+        console.log(`Filtering by: ${region}`);
+        // Add your filtering logic here
+      },
+      initTippy() {
+        tippy(".unit-icon", {
+          allowHTML: true,
+          interactive: true,
+          delay: [0, 50],
+          hideOnClick: false,
+          duration: [200, 100],
+        });
+      },
       async toggleWidget(index) {
         if (this.expandedWidgets.includes(index)) {
           // Collapse widget and destroy chart
@@ -544,6 +584,13 @@
             .replace(/[\s\W_]+/g, "");
         return `/images/traits/${formattedName}.svg`;
       },
+      getTooltipContent(unitName) {
+        return `
+          <div>
+            <strong>${unitName}</strong>
+          </div>
+        `;
+      },
     },
   };
   </script> 
@@ -742,6 +789,50 @@
     font-size: 1rem;
     font-weight: bold;
     color: rgb(0, 0, 0);
+    }
+
+    .tippy-box {
+    background-color: #f9f9f9;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    min-width: 500px;
+    }
+
+    .tippy-content {
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    }
+
+    .region-filters {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 20px auto;
+    gap: 5px;
+    max-width: fit-content;
+    }
+
+    .region-btn {
+    padding: 10px 20px;
+    margin: 5px auto;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+    color: white;
+    transition: background-color 0.3s;
+    background-color: #484d45;
+    display: block;
+    }
+
+    .region-btn:hover { filter: brightness(1.2); }
+
+    .region-btn[selected] {
+    border-bottom: 4px solid yellow;
     }
 
   </style>
