@@ -582,7 +582,7 @@
         const formattedName = teamComposition
             .toLowerCase()
             .replace(/[\s\W_]+/g, "");
-        return `/images/traits/${formattedName}.svg`;
+        return `/images/traits/${formattedName}.png`;
       },
       getTooltipContent(unitName) {
         return `
