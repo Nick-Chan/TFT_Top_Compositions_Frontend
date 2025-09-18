@@ -13,7 +13,7 @@ const unitLevelMap = {
     Sivir: 1,
     Syndra: 1,
     Zac: 1,
-    "Dr Mundo": 2,
+    "Dr. Mundo": 2,
     Gangplank: 2,
     Janna: 2,
     Jhin: 2,

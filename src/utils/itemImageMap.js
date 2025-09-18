@@ -13,7 +13,7 @@ const itemImageMap = {
     "Giant Slayer": "/images/items/TFT_Item_MadredsBloodrazor.png",
     "Guardbreaker": "/images/items/TFT_Item_PowerGauntlet.png",
     "Guinsoo's Rageblade": "/images/items/TFT_Item_GuinsoosRageblade.png",
-    "Hand of Justice": "/images/items/TFT_Item_UnstableConcoction.png",
+    "Hand Of Justice": "/images/items/TFT_Item_UnstableConcoction.png",
     "Hextech Gunblade": "/images/items/TFT_Item_HextechGunblade.png",
     "Infinity Edge": "/images/items/TFT_Item_InfinityEdge.png",
     "Ionic Spark": "/images/items/TFT_Item_IonicSpark.png",

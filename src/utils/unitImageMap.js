@@ -6,7 +6,7 @@ const unitImageMap = {
     Braum: "/images/units/braum.avif",
     Caitlyn: "/images/units/caitlyn.avif",
     Darius: "/images/units/darius.avif",
-    "Dr.Mundo": "/images/units/drmundo.avif",
+    "Dr. Mundo": "/images/units/drmundo.avif",
     Ezreal: "/images/units/ezreal.avif",
     Gangplank: "/images/units/gangplank.avif",
     Garen: "/images/units/garen.avif",

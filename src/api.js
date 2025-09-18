@@ -25,16 +25,30 @@ export async function fetchCommonUnits(traitComposition) {
         const unitOccurrences = {};
 
         const customOrder = [
-            "Amumu", "Darius", "Draven", "Irelia", "Lux", "Maddie", "Morgana", "Powder",
-            "Singed", "Steb", "Trundle", "Vex", "Violet", "Zyra", "Akali", "Camille",
-            "Leona", "Nocturne", "Rell", "Renata Glasc", "Sett", "Tristana", "Urgot",
-            "Vander", "Vladimir", "Zeri", "Ziggs", "Blitzcrank", "Cassiopeia", "Ezreal",
-            "Gangplank", "Kog'Maw", "Loris", "Nunu Willump", "Renni", "Scar", "Smeech",
-            "Swain", "Twisted Fate", "Ambessa", "Corki", "Dr Mundo", "Ekko", "Elise",
-            "Garen", "Heimerdinger", "Illaoi", "Nami", "Silco", "Twitch", "Vi", "Zoe",
-            "Caitlyn", "Jayce", "Jinx", "LeBlanc", "Malzahar", "Mordekaiser", "Rumble",
-            "Sevika", "Mel", "Viktor", "Warwick"
+            // 1*
+            "Aatrox", "Ezreal", "Garen", "Gnar", "Kalista", "Kayle", "Kennen",
+            "Lucian", "Malphite", "Naafiri", "Rell", "Sivir", "Syndra", "Zac",
+
+            // 2*
+            "Dr. Mundo", "Gangplank", "Janna", "Jhin", "Kai'sa", "Katarina",
+            "Kobuko", "Lux", "Rakan", "Shen", "Vi", "Xayah", "Xin Zhao",
+
+            // 3*
+            "Ahri", "Caitlyn", "Darius", "Jayce", "Kog'Maw", "Rammus",
+            "Smolder", "Malzahar", "Neeko", "Senna", "Swain", "Udyr",
+            "Viego", "Yasuo", "Ziggs", "Karma",
+
+            // 4*
+            "Akali", "Ashe", "Jarvan IV", "Jinx", "K'Sante", "Leona",
+            "Poppy", "Samira", "Sett", "Volibear", "Yuumi",
+
+            // 5*
+            "Braum", "Gwen", "Lee Sin", "Seraphine", "Twisted Fate",
+            "Varus", "Zyra"
         ];
+
+        // Excluded units
+        const EXCLUDED_UNITS = new Set(["TFT15_Galio", "Ekko"]);
 
         const getOrderIndex = (unit) =>
             customOrder.indexOf(unit) >= 0 ? customOrder.indexOf(unit) : Infinity;
@@ -43,17 +57,18 @@ export async function fetchCommonUnits(traitComposition) {
         data.forEach((unitRow) => {
             const units = unitRow.unitComposition.split(', ');
             units.forEach((unit) => {
-                if (unitOccurrences[unit]) {
-                    unitOccurrences[unit]++;
-                } else {
-                    unitOccurrences[unit] = 1;
-                }
+              if (EXCLUDED_UNITS.has(unit)) return;
+              if (unitOccurrences[unit]) {
+                  unitOccurrences[unit]++;
+              } else {
+                  unitOccurrences[unit] = 1;
+              }
             });
         });
 
         // Filter and join common units (≥ 50% of total rows)
         return Object.entries(unitOccurrences)
-            .filter(([, count]) => count / totalRows >= 0.5)
+            .filter(([unit, count]) => !EXCLUDED_UNITS.has(unit) && (count / totalRows) >= 0.5)
             .map(([unit]) => unit)
             .sort((a, b) => getOrderIndex(a) - getOrderIndex(b))
             .join(', ');
@@ -75,16 +90,30 @@ export async function fetchFlexUnits(traitComposition) {
         const unitOccurrences = {};
 
         const customOrder = [
-            "Amumu", "Darius", "Draven", "Irelia", "Lux", "Maddie", "Morgana", "Powder",
-            "Singed", "Steb", "Trundle", "Vex", "Violet", "Zyra", "Akali", "Camille",
-            "Leona", "Nocturne", "Rell", "Renata Glasc", "Sett", "Tristana", "Urgot",
-            "Vander", "Vladimir", "Zeri", "Ziggs", "Blitzcrank", "Cassiopeia", "Ezreal",
-            "Gangplank", "Kog'Maw", "Loris", "Nunu Willump", "Renni", "Scar", "Smeech",
-            "Swain", "Twisted Fate", "Ambessa", "Corki", "Dr Mundo", "Ekko", "Elise",
-            "Garen", "Heimerdinger", "Illaoi", "Nami", "Silco", "Twitch", "Vi", "Zoe",
-            "Caitlyn", "Jayce", "Jinx", "LeBlanc", "Malzahar", "Mordekaiser", "Rumble",
-            "Sevika", "Mel", "Viktor", "Warwick"
+            // 1*
+            "Aatrox", "Ezreal", "Garen", "Gnar", "Kalista", "Kayle", "Kennen",
+            "Lucian", "Malphite", "Naafiri", "Rell", "Sivir", "Syndra", "Zac",
+
+            // 2*
+            "Dr. Mundo", "Gangplank", "Janna", "Jhin", "Kai'sa", "Katarina",
+            "Kobuko", "Lux", "Rakan", "Shen", "Vi", "Xayah", "Xin Zhao",
+
+            // 3*
+            "Ahri", "Caitlyn", "Darius", "Jayce", "Kog'Maw", "Rammus",
+            "Smolder", "Malzahar", "Neeko", "Senna", "Swain", "Udyr",
+            "Viego", "Yasuo", "Ziggs", "Karma",
+
+            // 4*
+            "Akali", "Ashe", "Jarvan IV", "Jinx", "K'Sante", "Leona",
+            "Poppy", "Samira", "Sett", "Volibear", "Yuumi",
+
+            // 5*
+            "Braum", "Gwen", "Lee Sin", "Seraphine", "Twisted Fate",
+            "Varus", "Zyra"
         ];
+
+        // Excluded units
+        const EXCLUDED_UNITS = new Set(["TFT15_Galio", "Ekko"]);
 
         const getOrderIndex = (unit) =>
             customOrder.indexOf(unit) >= 0 ? customOrder.indexOf(unit) : Infinity;
@@ -93,6 +122,7 @@ export async function fetchFlexUnits(traitComposition) {
         data.forEach((unitRow) => {
             const units = unitRow.unitComposition.split(', ');
             units.forEach((unit) => {
+                if (EXCLUDED_UNITS.has(unit)) return;
                 if (unitOccurrences[unit]) {
                     unitOccurrences[unit]++;
                 } else {
@@ -103,11 +133,15 @@ export async function fetchFlexUnits(traitComposition) {
 
         // Filter and join flex units
         return Object.entries(unitOccurrences)
-            .filter(([, count]) => count / totalRows > 0.10 && count / totalRows < 0.50)
+            .filter(([unit, count]) =>
+                !EXCLUDED_UNITS.has(unit) &&
+                count / totalRows > 0.10 &&
+                count / totalRows < 0.50
+            )
             .map(([unit]) => unit)
             .sort((a, b) => getOrderIndex(a) - getOrderIndex(b))
             .slice(0, 3)
-            .join(', ');
+    .join(', ');
     } catch (error) {
         console.error("Error fetching common units:", error.message);
         throw error;
