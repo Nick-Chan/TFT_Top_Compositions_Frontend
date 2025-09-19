@@ -1,6 +1,6 @@
 # TFT Challenger Analyzer (Frontend)
 
-A Lightweight **Teamfight Tactics (TFT) Analyser** that helps high-level players find the **best team compositions and items** based on Masters+ match data. (Backend)
+A Lightweight **Teamfight Tactics (TFT) Analyser** that helps high-level players find the **best team compositions and items** based on Masters+ match data.
 
 This tool provides insights into **meta compositions, item efficiencies, unit synergies, and win rates**.
 
